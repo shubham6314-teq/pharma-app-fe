@@ -1,0 +1,26 @@
+---
+description: React pages, components, routing, and Tailwind UI
+globs: "**/src/**/*.tsx"
+alwaysApply: false
+---
+
+# UI
+
+- Functional components only. Pages in `src/pages/<route>/`. Domain UI in `src/features/<domain>/components/`.
+- Add routes in `src/app/App.tsx`. Do not declare routes inside feature files.
+- Signed-in pages nest under `AppShell` (`src/app/AppShell.tsx`) with `NavLink` items from `src/app/nav-items.ts`. Desktop: collapsible `#0b3d3a` sidebar (hamburger on the left of the page heading in the content area; toggles icons+labels vs icons-only). Below `lg`: top bar + off-canvas drawer (Tailwind only, no overlay library).
+- Profile is app chrome in `AppShell`: mobile sticky header (right) and sidebar account block (desktop/drawer). Do not put it in `PagePanel` next to Create. `/profile` is nested under `AppShell` like other signed-in pages.
+- List screens use `ResourceTable` (search, optional filters, Create, table on `md+` / stacked cards below, pagination). Dialogs use `Modal`. Reuse `Button`, `TextField`, `SelectField`, `TextArea`, `PharmacyMark`, `Thumbnail`, and `ImagePicker`. New shared primitives go in `src/components/ui`.
+- Mutation feedback uses `useToast()` (`src/hooks/use-toast.ts`) and `Toaster` (`src/components/ui/Toaster.tsx`, top-right). Toast success after login, create, update, delete, and sign out. Toast API errors too; keep field errors on the form.
+- Table images use `Thumbnail`. Hover or focus shows a larger preview tooltip. Create/edit image fields use `ImagePicker`: eye button opens a lightbox, and a remove button clears the preview (new file or existing image).
+- Style with Tailwind utilities. Keep the pharmacy palette: teal buttons, `#0b3d3a` brand panel, white cards, `slate` text.
+- Pass `ref` through to native inputs (React Hook Form needs it).
+- No fetch or Redux store setup inside presentational components. Placeholder lists stay in the page file until RTK Query exists.
+
+```tsx
+// ❌ BAD — one-off input in a page
+<input className="border p-2" />
+
+// ✅ GOOD
+<TextField label="Email" error={errors.email?.message} {...register("email")} />
+```

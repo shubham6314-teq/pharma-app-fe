@@ -1,0 +1,15 @@
+---
+description: Core stack, folders, and non-negotiables for Pharma App FE
+alwaysApply: true
+---
+
+# Project
+
+Pharma desk SPA. Login is wired to `POST /auth/login` via RTK Query. Divisions CRUD uses `/divisions`.
+
+- Stack: React 19, TS, Vite, Tailwind v4, React Router, RTK + RTK Query, Zod, React Hook Form.
+- Do not add Zustand, TanStack Query, Yup, or another CSS framework.
+- Put files in `src/app`, `src/pages`, `src/features/<domain>`, `src/components/ui`, `src/store`.
+- Keep diffs small. Match existing naming: `PascalCase.tsx`, `use-thing.ts`, `kebab-case.ts`.
+- `import type` for types. No `enum`s (`verbatimModuleSyntax`, `erasableSyntaxOnly`).
+- After adding a lasting pattern (new feature folder, API, form), update `AGENTS.md` and the matching `.cursor/rules` file.
