@@ -29,16 +29,16 @@ export function toProductFormData(
     form.append('packSize', payload.packSize)
   }
 
-  if (payload.packUnit !== undefined) {
-    form.append('packUnit', payload.packUnit)
+  if (payload.packTypeId !== undefined) {
+    form.append('packTypeId', payload.packTypeId)
   }
 
   if (payload.contentQuantity !== undefined) {
     form.append('contentQuantity', String(payload.contentQuantity))
   }
 
-  if (payload.contentUnit !== undefined) {
-    form.append('contentUnit', payload.contentUnit)
+  if (payload.contentUnitId !== undefined) {
+    form.append('contentUnitId', payload.contentUnitId)
   }
 
   if (payload.reorderLevel !== undefined) {

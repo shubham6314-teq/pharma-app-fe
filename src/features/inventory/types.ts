@@ -1,4 +1,4 @@
-import type { ContentUnit, PackUnit } from '../products/units'
+import type { ProductCatalogUnit } from '../products/types'
 
 export type StockStatus = 'IN_STOCK' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING'
 
@@ -16,9 +16,9 @@ export type InventoryProduct = {
   name: string
   code: string
   packSize: string
-  packUnit: PackUnit
+  packType: ProductCatalogUnit
   contentQuantity: number
-  contentUnit: ContentUnit
+  contentUnit: ProductCatalogUnit
   reorderLevel: number
   mrp: number
   availableQuantity: number

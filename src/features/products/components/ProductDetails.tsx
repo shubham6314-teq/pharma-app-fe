@@ -75,7 +75,7 @@ export function ProductDetails({ product, onEdit, onClose }: ProductDetailsProps
           {formatPackContent(
             product.contentQuantity,
             product.contentUnit,
-            product.packUnit,
+            product.packType,
           )}
         </DetailField>
         <DetailField label="Reorder level">

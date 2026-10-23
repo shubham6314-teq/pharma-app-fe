@@ -98,6 +98,66 @@ export function IconGrid(props: IconProps) {
   )
 }
 
+export function IconChevron(props: IconProps) {
+  return (
+    <BaseIcon {...props}>
+      <path
+        d="m8 10 4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </BaseIcon>
+  )
+}
+
+export function IconDatabase(props: IconProps) {
+  return (
+    <BaseIcon {...props}>
+      <ellipse cx="12" cy="6.5" rx="7" ry="2.4" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M5 6.5v11c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4v-11"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M5 12c0 1.3 3.1 2.4 7 2.4s7-1.1 7-2.4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </BaseIcon>
+  )
+}
+
+export function IconPackage(props: IconProps) {
+  return (
+    <BaseIcon {...props}>
+      <path
+        d="M4.5 8 12 4.5 19.5 8v8L12 19.5 4.5 16V8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M12 12v7.5M4.5 8 12 12l7.5-4" stroke="currentColor" strokeWidth="1.8" />
+    </BaseIcon>
+  )
+}
+
+export function IconBeaker(props: IconProps) {
+  return (
+    <BaseIcon {...props}>
+      <path
+        d="M9 4.5h6M10 4.5v4.2L6.8 18a2 2 0 0 0 1.8 2.5h6.8a2 2 0 0 0 1.8-2.5L14 8.7V4.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M8.5 14h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </BaseIcon>
+  )
+}
+
 export function IconBox(props: IconProps) {
   return (
     <BaseIcon {...props}>

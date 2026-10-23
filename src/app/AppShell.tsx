@@ -2,12 +2,16 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import {
+  IconBeaker,
   IconBox,
+  IconChevron,
   IconClipboard,
+  IconDatabase,
   IconFile,
   IconGrid,
   IconLayers,
   IconMenu,
+  IconPackage,
   IconPills,
   IconSignOut,
   IconTag,
@@ -20,7 +24,15 @@ import { useToast } from '../hooks/use-toast'
 import { useLogoutMutation } from '../features/auth/api'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { clearAuth } from '../store/slices/auth-slice'
-import { navItems, type NavIconName } from './nav-items'
+import {
+  groupContainsPath,
+  isNavGroup,
+  navItems,
+  navLabelForPath,
+  type NavGroupItem,
+  type NavIconName,
+  type NavLinkItem,
+} from './nav-items'
 
 const SIDEBAR_COLLAPSED_KEY = 'pharma-sidebar-collapsed'
 
@@ -28,6 +40,9 @@ const navIcons: Record<NavIconName, ReactNode> = {
   divisions: <IconLayers />,
   categories: <IconTag />,
   products: <IconPills />,
+  masterData: <IconDatabase />,
+  packTypes: <IconPackage />,
+  contentUnits: <IconBeaker />,
   overview: <IconGrid />,
   inventory: <IconBox />,
   orders: <IconClipboard />,
@@ -51,14 +66,7 @@ export function AppShell() {
   const toast = useToast()
   const [logout] = useLogoutMutation()
   const user = useAppSelector((state) => state.auth.user)
-  const currentLabel =
-    location.pathname === '/profile'
-      ? 'Profile'
-      : (navItems.find((item) =>
-          item.end
-            ? location.pathname === item.to
-            : location.pathname.startsWith(item.to),
-        )?.label ?? 'Divisions')
+  const currentLabel = navLabelForPath(location.pathname)
 
   useEffect(() => {
     setNavOpen(false)
@@ -97,12 +105,13 @@ export function AppShell() {
     }
   }
 
+  function setSidebarCollapsed(next: boolean) {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
+    setCollapsed(next)
+  }
+
   function toggleCollapsed() {
-    setCollapsed((current) => {
-      const next = !current
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0')
-      return next
-    })
+    setSidebarCollapsed(!collapsed)
   }
 
   return (
@@ -118,6 +127,7 @@ export function AppShell() {
             userName={user?.name}
             userEmail={user?.email}
             onSignOut={handleSignOut}
+            onExpandSidebar={() => setSidebarCollapsed(false)}
           />
         </aside>
 
@@ -184,12 +194,14 @@ function SidebarNav({
   userEmail,
   onSignOut,
   onNavigate,
+  onExpandSidebar,
 }: {
   collapsed: boolean
   userName: string | undefined
   userEmail: string | undefined
   onSignOut: () => void
   onNavigate?: () => void
+  onExpandSidebar?: () => void
 }) {
   return (
     <>
@@ -205,28 +217,25 @@ function SidebarNav({
         )}
       </div>
 
-      <nav className={`flex flex-1 flex-col gap-1 ${collapsed ? 'px-2' : 'px-3'}`}>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            onClick={onNavigate}
-            title={collapsed ? item.label : undefined}
-            className={({ isActive }) =>
-              `flex items-center rounded-xl text-sm font-medium transition ${
-                collapsed ? 'h-10 justify-center' : 'gap-3 px-3 py-2.5'
-              } ${
-                isActive
-                  ? 'bg-white/12 text-white'
-                  : 'text-teal-100/75 hover:bg-white/10 hover:text-white'
-              }`
-            }
-          >
-            <span className="shrink-0">{navIcons[item.icon]}</span>
-            {collapsed ? <span className="sr-only">{item.label}</span> : item.label}
-          </NavLink>
-        ))}
+      <nav className={`flex flex-1 flex-col gap-1 overflow-y-auto ${collapsed ? 'px-2' : 'px-3'}`}>
+        {navItems.map((item) =>
+          isNavGroup(item) ? (
+            <SidebarNavGroup
+              key={item.id}
+              group={item}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+              onExpandSidebar={onExpandSidebar}
+            />
+          ) : (
+            <SidebarNavLink
+              key={item.to}
+              item={item}
+              collapsed={collapsed}
+              onNavigate={onNavigate}
+            />
+          ),
+        )}
       </nav>
 
       <SidebarAccount
@@ -237,6 +246,108 @@ function SidebarNav({
         onNavigate={onNavigate}
       />
     </>
+  )
+}
+
+function navLinkClassName(isActive: boolean, collapsed: boolean) {
+  return `flex items-center rounded-xl text-sm font-medium transition ${
+    collapsed ? 'h-10 justify-center' : 'gap-3 px-3 py-2.5'
+  } ${
+    isActive
+      ? 'bg-white/12 text-white'
+      : 'text-teal-100/75 hover:bg-white/10 hover:text-white'
+  }`
+}
+
+function SidebarNavLink({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavLinkItem
+  collapsed: boolean
+  nested?: boolean
+  onNavigate?: () => void
+}) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={onNavigate}
+      title={collapsed ? item.label : undefined}
+      className={({ isActive }) => navLinkClassName(isActive, collapsed)}
+    >
+      <span className="shrink-0">{navIcons[item.icon]}</span>
+      {collapsed ? <span className="sr-only">{item.label}</span> : item.label}
+    </NavLink>
+  )
+}
+
+function SidebarNavGroup({
+  group,
+  collapsed,
+  onNavigate,
+  onExpandSidebar,
+}: {
+  group: NavGroupItem
+  collapsed: boolean
+  onNavigate?: () => void
+  onExpandSidebar?: () => void
+}) {
+  const location = useLocation()
+  const childActive = groupContainsPath(group, location.pathname)
+  const [expanded, setExpanded] = useState(childActive)
+  const open = childActive || expanded
+
+  if (collapsed) {
+    return (
+      <button
+        type="button"
+        title={group.label}
+        aria-label={group.label}
+        className={navLinkClassName(childActive, true)}
+        onClick={() => {
+          setExpanded(true)
+          onExpandSidebar?.()
+        }}
+      >
+        <span className="shrink-0">{navIcons[group.icon]}</span>
+        <span className="sr-only">{group.label}</span>
+      </button>
+    )
+  }
+
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
+          childActive
+            ? 'bg-white/12 text-white'
+            : 'text-teal-100/75 hover:bg-white/10 hover:text-white'
+        }`}
+        onClick={() => setExpanded((current) => (childActive ? true : !current))}
+      >
+        <span className="shrink-0">{navIcons[group.icon]}</span>
+        <span className="min-w-0 flex-1 truncate">{group.label}</span>
+        <IconChevron
+          className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open ? (
+        <div className="mt-1 ml-4 flex flex-col gap-1 border-l border-white/10 pl-2">
+          {group.children.map((item) => (
+            <SidebarNavLink
+              key={item.to}
+              item={item}
+              collapsed={false}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }
 

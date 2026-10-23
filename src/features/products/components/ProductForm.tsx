@@ -8,6 +8,11 @@ import { TextField } from '../../../components/ui/TextField'
 import { DEFAULT_PAGE } from '../../../lib/pagination'
 import { zodResolver } from '../../../lib/zod-resolver'
 import { useGetCategoriesQuery } from '../../categories/api'
+import {
+  useGetContentUnitsQuery,
+  useGetPackTypesQuery,
+} from '../../catalog-units/api'
+import type { CatalogUnit } from '../../catalog-units/types'
 import type { Category } from '../../categories/types'
 import type { Division } from '../../divisions/types'
 import {
@@ -15,7 +20,6 @@ import {
   productFormSchema,
   type ProductFormValues,
 } from '../product-schema'
-import { CONTENT_UNIT_LABELS, CONTENT_UNITS, PACK_UNIT_LABELS, PACK_UNITS } from '../units'
 
 const CATEGORY_OPTIONS_LIMIT = 100
 
@@ -68,9 +72,26 @@ export function ProductForm({
       { skip: !divisionId },
     )
 
+  const { data: packTypesData } = useGetPackTypesQuery({
+    page: DEFAULT_PAGE,
+    limit: CATEGORY_OPTIONS_LIMIT,
+  })
+  const { data: contentUnitsData } = useGetContentUnitsQuery({
+    page: DEFAULT_PAGE,
+    limit: CATEGORY_OPTIONS_LIMIT,
+  })
+
   const categories = categoryOptionsForForm(
     categoriesData?.data ?? [],
     defaultValues.categoryId,
+  )
+  const packTypes = catalogUnitOptions(
+    packTypesData?.data ?? [],
+    defaultValues.packTypeId,
+  )
+  const contentUnits = catalogUnitOptions(
+    contentUnitsData?.data ?? [],
+    defaultValues.contentUnitId,
   )
 
   return (
@@ -175,13 +196,14 @@ export function ProductForm({
       <div className="grid gap-5 sm:grid-cols-3">
         <SelectField
           label="Counted as"
-          error={errors.packUnit?.message}
+          error={errors.packTypeId?.message}
           hint="The pack you receive and sell."
-          {...register('packUnit')}
+          {...register('packTypeId')}
         >
-          {PACK_UNITS.map((unit) => (
-            <option key={unit} value={unit}>
-              {PACK_UNIT_LABELS[unit]}
+          <option value="">Select a pack type</option>
+          {packTypes.map((unit) => (
+            <option key={unit.id} value={unit.id}>
+              {unit.name}
             </option>
           ))}
         </SelectField>
@@ -197,12 +219,13 @@ export function ProductForm({
         />
         <SelectField
           label="Content unit"
-          error={errors.contentUnit?.message}
-          {...register('contentUnit')}
+          error={errors.contentUnitId?.message}
+          {...register('contentUnitId')}
         >
-          {CONTENT_UNITS.map((unit) => (
-            <option key={unit} value={unit}>
-              {CONTENT_UNIT_LABELS[unit]}
+          <option value="">Select a content unit</option>
+          {contentUnits.map((unit) => (
+            <option key={unit.id} value={unit.id}>
+              {unit.name}
             </option>
           ))}
         </SelectField>
@@ -273,7 +296,12 @@ export function ProductForm({
         <Button
           width="auto"
           type="submit"
-          disabled={isSubmitting || divisions.length === 0}
+          disabled={
+            isSubmitting ||
+            divisions.length === 0 ||
+            packTypes.length === 0 ||
+            contentUnits.length === 0
+          }
         >
           {isSubmitting ? 'Saving…' : submitLabel}
         </Button>
@@ -290,4 +318,11 @@ function categoryOptionsForForm(
     (category) =>
       category.status === 'ACTIVE' || category.id === selectedCategoryId,
   )
+}
+
+function catalogUnitOptions(
+  units: CatalogUnit[],
+  selectedId?: string,
+): CatalogUnit[] {
+  return units.filter((unit) => unit.status === 'ACTIVE' || unit.id === selectedId)
 }

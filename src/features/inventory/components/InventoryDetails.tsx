@@ -57,14 +57,14 @@ export function InventoryDetails({ batchId, onClose, onRecord }: InventoryDetail
           {formatPackContent(
             data.product.contentQuantity,
             data.product.contentUnit,
-            data.product.packUnit,
+            data.product.packType,
           )}
         </DetailField>
         <DetailField label="On hand">
-          {formatPackQuantity(data.quantityOnHand, data.product.packUnit)}
+          {formatPackQuantity(data.quantityOnHand, data.product.packType)}
         </DetailField>
         <DetailField label="Available for product">
-          {formatPackQuantity(data.product.availableQuantity, data.product.packUnit)}
+          {formatPackQuantity(data.product.availableQuantity, data.product.packType)}
         </DetailField>
         <DetailField label="Manufacturing">{formatIsoDate(data.manufacturingDate)}</DetailField>
         <DetailField label="Expiry">{formatIsoDate(data.expiryDate)}</DetailField>
@@ -93,7 +93,7 @@ export function InventoryDetails({ batchId, onClose, onRecord }: InventoryDetail
               </div>
               <p className="text-sm font-medium text-slate-800">
                 {movement.quantity > 0 ? '+' : ''}
-                {formatPackQuantity(movement.quantity, data.product.packUnit)}
+                {formatPackQuantity(movement.quantity, data.product.packType)}
               </p>
             </li>
           ))}

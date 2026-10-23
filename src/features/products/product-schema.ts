@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { CONTENT_UNITS, PACK_UNITS } from './units'
 
 export const PRODUCT_IMAGE_MAX_BYTES = 5 * 1024 * 1024
 export const PRODUCT_IMAGE_TYPES = [
@@ -38,16 +37,12 @@ export const productFormSchema = z.object({
     .trim()
     .min(1, 'Packaging size is required')
     .max(100, 'Packaging size must be at most 100 characters'),
-  packUnit: z.enum(PACK_UNITS, {
-    error: 'Select how this product is counted',
-  }),
+  packTypeId: z.string().trim().min(1, 'Select how this product is counted'),
   contentQuantity: z.coerce
     .number({ error: 'Content quantity is required' })
     .positive('Content quantity must be greater than 0')
     .max(99999999.99, 'Content quantity is too large'),
-  contentUnit: z.enum(CONTENT_UNITS, {
-    error: 'Select the content unit',
-  }),
+  contentUnitId: z.string().trim().min(1, 'Select the content unit'),
   reorderLevel: z.coerce
     .number({ error: 'Reorder level is required' })
     .int('Reorder level must be a whole number')

@@ -117,7 +117,7 @@ export function InventoryWorkspace() {
     {
       id: 'quantity',
       header: 'On hand',
-      render: (row) => formatPackQuantity(row.quantityOnHand, row.product.packUnit),
+      render: (row) => formatPackQuantity(row.quantityOnHand, row.product.packType),
     },
     {
       id: 'rate',

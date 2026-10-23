@@ -1,5 +1,5 @@
 import { STOCK_STATUS_LABELS } from '../labels'
-import type { StockStatus } from './types'
+import type { StockStatus } from '../types'
 
 const STATUS_CLASS: Record<StockStatus, string> = {
   IN_STOCK: 'bg-teal-50 text-teal-800',

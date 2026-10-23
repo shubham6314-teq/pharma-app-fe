@@ -2,7 +2,9 @@ import { useEffect, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useRefreshMutation } from '../features/auth/api'
 import { CategoriesPage } from '../pages/categories/CategoriesPage'
+import { ContentUnitsPage } from '../pages/content-units/ContentUnitsPage'
 import { DivisionsPage } from '../pages/divisions/DivisionsPage'
+import { PackTypesPage } from '../pages/pack-types/PackTypesPage'
 import { ProductsPage } from '../pages/products/ProductsPage'
 import { HomePage } from '../pages/home/HomePage'
 import { InventoryPage } from '../pages/inventory/InventoryPage'
@@ -97,6 +99,8 @@ export function App() {
             <Route path="divisions" element={<DivisionsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="products" element={<ProductsPage />} />
+            <Route path="pack-types" element={<PackTypesPage />} />
+            <Route path="content-units" element={<ContentUnitsPage />} />
             <Route path="overview" element={<HomePage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="orders" element={<OrdersPage />} />

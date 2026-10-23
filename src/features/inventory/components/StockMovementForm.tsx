@@ -187,7 +187,7 @@ export function StockMovementForm({
         <option value="new">New batch</option>
         {batches.map((batch) => (
           <option key={batch.id} value={batch.id}>
-            {batch.batchNumber} · {formatPackQuantity(batch.quantityOnHand, batch.product.packUnit)} · exp {formatIsoDate(batch.expiryDate)}
+            {batch.batchNumber} · {formatPackQuantity(batch.quantityOnHand, batch.product.packType)} · exp {formatIsoDate(batch.expiryDate)}
           </option>
         ))}
       </SelectField>
@@ -226,7 +226,7 @@ export function StockMovementForm({
         </>
       ) : selectedBatch ? (
         <p className="rounded-xl bg-slate-50 px-3.5 py-3 text-sm text-slate-600">
-          {selectedBatch.batchNumber} · manufactured {formatIsoDate(selectedBatch.manufacturingDate)} · expires {formatIsoDate(selectedBatch.expiryDate)} · {formatPackQuantity(selectedBatch.quantityOnHand, selectedBatch.product.packUnit)} on hand
+          {selectedBatch.batchNumber} · manufactured {formatIsoDate(selectedBatch.manufacturingDate)} · expires {formatIsoDate(selectedBatch.expiryDate)} · {formatPackQuantity(selectedBatch.quantityOnHand, selectedBatch.product.packType)} on hand
         </p>
       ) : null}
       <div className="grid gap-5 sm:grid-cols-2">
@@ -288,7 +288,7 @@ function productHint(
       product.reorderLevel > 0
         ? `Reorder at ${product.reorderLevel}.`
         : 'Reorder alert is off.'
-    return `${product.packSize}. ${formatPackContent(product.contentQuantity, product.contentUnit, product.packUnit)}. ${reorder}`
+    return `${product.packSize}. ${formatPackContent(product.contentQuantity, product.contentUnit, product.packType)}. ${reorder}`
   }
 
   if (categoryId && !loading && productCount === 0) {

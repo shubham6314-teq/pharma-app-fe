@@ -1,8 +1,8 @@
+import type { CatalogUnit } from '../catalog-units/types'
 import type { ProductFormValues } from './product-schema'
-import type { ContentUnit, PackUnit } from './units'
 
 export type { ProductFormValues }
-export type { ContentUnit, PackUnit }
+export type { CatalogUnit }
 
 export type ProductStatus = 'ACTIVE' | 'INACTIVE'
 
@@ -20,6 +20,11 @@ export type ProductCategory = {
   division: ProductDivision
 }
 
+export type ProductCatalogUnit = Pick<
+  CatalogUnit,
+  'id' | 'name' | 'code' | 'singularLabel' | 'pluralLabel'
+>
+
 export type Product = {
   id: string
   name: string
@@ -29,9 +34,11 @@ export type Product = {
   brandName: string
   composition: string
   packSize: string
-  packUnit: PackUnit
+  packTypeId: string
+  packType: ProductCatalogUnit
   contentQuantity: number
-  contentUnit: ContentUnit
+  contentUnitId: string
+  contentUnit: ProductCatalogUnit
   reorderLevel: number
   mrp: number
   discountPercent: number
@@ -57,9 +64,9 @@ export type CreateProductPayload = {
   brandName: string
   composition: string
   packSize: string
-  packUnit: PackUnit
+  packTypeId: string
   contentQuantity: number
-  contentUnit: ContentUnit
+  contentUnitId: string
   reorderLevel?: number
   mrp: number
   discountPercent?: number
@@ -74,9 +81,9 @@ export type UpdateProductPayload = {
   brandName?: string
   composition?: string
   packSize?: string
-  packUnit?: PackUnit
+  packTypeId?: string
   contentQuantity?: number
-  contentUnit?: ContentUnit
+  contentUnitId?: string
   reorderLevel?: number
   mrp?: number
   discountPercent?: number
