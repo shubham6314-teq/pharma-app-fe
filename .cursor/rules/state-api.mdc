@@ -1,0 +1,33 @@
+---
+description: Redux Toolkit slices and RTK Query data fetching
+globs: "**/src/store/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# State and API
+
+- Client state only in slices (`auth` token/user, toast queue, UI flags). Never cache server lists in slices.
+- All HTTP goes through `baseApi` in `src/store/api/base-api.ts`.
+- Add feature endpoints with `baseApi.injectEndpoints` in `src/features/<domain>/api.ts`. Register the module with a side-effect import in `src/store/index.ts`.
+- Auth login is `src/features/auth/api.ts` (`POST /auth/login`). Store tokens with `setAuth`.
+- Divisions: `src/features/divisions/api.ts`. List with `{ page, limit }`; response `{ data, meta }`. Mutations invalidate `{ type: 'Division', id: 'LIST' }`. Add new resource tags on `baseApi.tagTypes`.
+- Use `useAppDispatch` / `useAppSelector` from `src/store/hooks.ts`.
+- Toasts: `pushToast` / `dismissToast` in `src/store/slices/toast-slice.ts`. Prefer `useToast()` from feature UI.
+- `fetchBaseQuery` already sends `Authorization` from `state.auth.token`.
+- Base URL is `import.meta.env.VITE_API_BASE_URL`.
+
+```ts
+// ❌ BAD
+export const medicinesSlice = createSlice({
+  name: "medicines",
+  initialState: { items: [] },
+  reducers: { setItems: (state, action) => { state.items = action.payload } },
+})
+
+// ✅ GOOD
+export const medicinesApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getMedicines: builder.query<Medicine[], void>({ query: () => "/medicines" }),
+  }),
+})
+```

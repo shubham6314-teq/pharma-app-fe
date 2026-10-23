@@ -1,0 +1,25 @@
+---
+description: Zod schemas and React Hook Form validation
+globs: "**/src/features/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Forms
+
+- One Zod schema per form in `src/features/<domain>/*-schema.ts`.
+- Infer values with `z.infer<typeof schema>`. Do not duplicate hand-written form types.
+- Use `useForm` + `zodResolver` from `src/lib/zod-resolver.ts`. Mode: `onTouched`.
+- Required messages first, then format/length. Trim emails. Use `z.email()` (Zod 4).
+- Show `errors.field?.message` on `TextField`. Keep `noValidate` on the `<form>`.
+- Do not call the API until `handleSubmit` succeeds.
+
+```ts
+// ❌ BAD
+if (!email.includes("@")) errors.email = "invalid"
+
+// ✅ GOOD
+export const loginSchema = z.object({
+  email: z.string().trim().min(1, "Email is required").pipe(z.email("Enter a valid email address")),
+})
+export type LoginFormValues = z.infer<typeof loginSchema>
+```

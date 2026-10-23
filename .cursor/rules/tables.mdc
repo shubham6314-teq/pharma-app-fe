@@ -1,0 +1,34 @@
+---
+description: Shared list/table screens with search and pagination
+globs: "**/src/{pages,features,components/ui}/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Tables
+
+- Every list screen uses `ResourceTable` from `src/components/ui/ResourceTable.tsx`. Do not invent a second table or list layout. On `md+` it renders a table; below `md` it stacks the same columns as cards.
+- Toolbar: search on the left inside the card, optional filters in `toolbarExtra`, **Create** on the top right via `createLabel` + `onCreate` when the resource supports it.
+- Pagination matches the backend contract: query `page` (default 1) and `limit` (default 10, max 100). Response `{ data, meta: { page, limit, total, totalPages } }` from `src/lib/pagination.ts`.
+- Server-backed lists (divisions) send `page`/`limit` through RTK Query. Do not put list rows in a Redux slice.
+- Search and status filters are UI-only until the API adds those params — do not send unknown query keys (Nest `forbidNonWhitelisted` will 400). Filter the current page locally, or use `useLocalTable` for mock data. Known list params (`divisionId`, `categoryId`) may be sent.
+- Combine image + title in one primary column (`EntityCell`). Row actions stay in an Actions column and can be icon buttons (`RowActions`) with aria-labels. Create/edit forms use Zod + `useForm` in `src/features/<domain>/`.
+- Image cells use `Thumbnail` so hover/focus shows a larger preview.
+- Default page size is `DEFAULT_PAGE_SIZE` (10). Previous/Next disable on the first/last page.
+
+```tsx
+// ❌ BAD — custom list + local slice cache
+<ul>{items.map((row) => <li>{row.name}</li>)}</ul>
+
+// ✅ GOOD
+<ResourceTable
+  title="Divisions"
+  searchValue={search}
+  onSearchChange={setSearch}
+  createLabel="Create division"
+  onCreate={openCreate}
+  columns={columns}
+  rows={data.data}
+  meta={data.meta}
+  onPageChange={setPage}
+/>
+```
