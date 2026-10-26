@@ -43,16 +43,6 @@ export const navItems: NavEntry[] = [
       { to: "/content-units", label: "Content units", icon: "contentUnits" },
     ],
   },
-  {
-    type: "group",
-    id: "master-data",
-    label: "Master data",
-    icon: "masterData",
-    children: [
-      { to: "/pack-types", label: "Pack types", icon: "packTypes" },
-      { to: "/content-units", label: "Content units", icon: "contentUnits" },
-    ],
-  },
   { to: "/overview", label: "Overview", icon: "overview" },
   { to: "/orders", label: "Orders", icon: "orders" },
   { to: "/prescriptions", label: "Prescriptions", icon: "prescriptions" },
