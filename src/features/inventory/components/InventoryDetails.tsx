@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from '../../../components/ui/Button'
+import { IconPencil } from '../../../components/ui/icons'
 import { formatPackContent, formatPackQuantity } from '../../products/units'
 import { useGetInventoryBatchQuery } from '../api'
 import {
@@ -7,15 +8,22 @@ import {
   formatMoney,
   MOVEMENT_TYPE_LABELS,
 } from '../labels'
+import type { InventoryBatch } from '../types'
 import { StockStatusBadge } from './StockStatusBadge'
 
 type InventoryDetailsProps = {
   batchId: string
   onClose: () => void
+  onEdit: (batch: InventoryBatch) => void
   onRecord: () => void
 }
 
-export function InventoryDetails({ batchId, onClose, onRecord }: InventoryDetailsProps) {
+export function InventoryDetails({
+  batchId,
+  onClose,
+  onEdit,
+  onRecord,
+}: InventoryDetailsProps) {
   const { data, isLoading, isError } = useGetInventoryBatchQuery(batchId)
 
   if (isLoading && !data) {
@@ -102,9 +110,13 @@ export function InventoryDetails({ batchId, onClose, onRecord }: InventoryDetail
         <p className="mt-3 text-sm text-slate-500">No movements recorded.</p>
       )}
 
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex flex-wrap justify-end gap-3">
         <Button variant="secondary" width="auto" onClick={onClose}>
           Close
+        </Button>
+        <Button width="auto" onClick={() => onEdit(data)}>
+          <IconPencil className="h-4 w-4" />
+          Edit
         </Button>
         <Button width="auto" onClick={onRecord}>
           Record movement

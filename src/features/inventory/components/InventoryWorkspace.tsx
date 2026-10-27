@@ -11,7 +11,17 @@ import { useGetCategoriesQuery } from '../../categories/api'
 import { useGetDivisionsQuery } from '../../divisions/api'
 import type { Division } from '../../divisions/types'
 import { formatPackQuantity } from '../../products/units'
-import { useCreateStockMovementMutation, useGetInventoryQuery } from '../api'
+import {
+  useCreateStockMovementMutation,
+  useGetInventoryQuery,
+  useUpdateInventoryMutation,
+} from '../api'
+import {
+  hasInventoryBatchFieldChange,
+  toUpdateInventoryPayload,
+  valuesFromInventoryBatch,
+  type InventoryBatchFormValues,
+} from '../inventory-batch-schema'
 import {
   formatIsoDate,
   formatMoney,
@@ -20,6 +30,7 @@ import {
 import type { StockMovementFormValues } from '../stock-movement-schema'
 import { emptyStockMovementValues } from '../stock-movement-schema'
 import type { InventoryBatch, StockStatus } from '../types'
+import { InventoryBatchForm } from './InventoryBatchForm'
 import { InventoryDetails } from './InventoryDetails'
 import { StockMovementForm } from './StockMovementForm'
 import { StockStatusBadge } from './StockStatusBadge'
@@ -29,6 +40,7 @@ const OPTIONS_LIMIT = 100
 type DialogState =
   | { type: 'create'; preset?: Partial<StockMovementFormValues> }
   | { type: 'view'; batch: InventoryBatch }
+  | { type: 'edit'; batch: InventoryBatch; fromView?: boolean }
 
 function activeDivisions(divisions: Division[]): Division[] {
   return divisions.filter((division) => division.status === 'ACTIVE')
@@ -78,6 +90,7 @@ export function InventoryWorkspace() {
     ...(status ? { status } : {}),
   })
   const [createMovement, createState] = useCreateStockMovementMutation()
+  const [updateInventory, updateState] = useUpdateInventoryMutation()
 
   const divisions = divisionsData?.data ?? []
   const categories = divisionId
@@ -145,6 +158,14 @@ export function InventoryWorkspace() {
             Details
           </Button>
           <Button
+            variant="secondary"
+            size="sm"
+            width="auto"
+            onClick={() => openEdit(row)}
+          >
+            Edit
+          </Button>
+          <Button
             size="sm"
             width="auto"
             onClick={() => openMovement(row)}
@@ -167,6 +188,21 @@ export function InventoryWorkspace() {
         batchChoice: batch.id,
       },
     })
+  }
+
+  function openEdit(batch: InventoryBatch, fromView = false) {
+    setFormError(null)
+    setDialog({ type: 'edit', batch, fromView })
+  }
+
+  function closeEditDialog() {
+    if (dialog?.type === 'edit' && dialog.fromView) {
+      setFormError(null)
+      setDialog({ type: 'view', batch: dialog.batch })
+      return
+    }
+
+    setDialog(null)
   }
 
   async function handleCreate(values: StockMovementFormValues) {
@@ -192,6 +228,28 @@ export function InventoryWorkspace() {
       toast.success('Stock movement saved.')
     } catch (error) {
       const message = getApiErrorMessage(error, 'Unable to save the stock movement.')
+      setFormError(message)
+      toast.error(message)
+    }
+  }
+
+  async function handleEdit(batch: InventoryBatch, values: InventoryBatchFormValues) {
+    setFormError(null)
+    const body = toUpdateInventoryPayload(values, batch)
+
+    if (!hasInventoryBatchFieldChange(body)) {
+      const message = 'At least one batch field must be provided'
+      setFormError(message)
+      toast.error(message)
+      return
+    }
+
+    try {
+      await updateInventory({ id: batch.id, body }).unwrap()
+      setDialog(null)
+      toast.success('Batch updated.')
+    } catch (error) {
+      const message = getApiErrorMessage(error, 'Unable to update batch.')
       setFormError(message)
       toast.error(message)
     }
@@ -296,6 +354,7 @@ export function InventoryWorkspace() {
           <InventoryDetails
             batchId={dialog.batch.id}
             onClose={() => setDialog(null)}
+            onEdit={(batch) => openEdit(batch, true)}
             onRecord={() => openMovement(dialog.batch)}
           />
         ) : null}
@@ -320,6 +379,25 @@ export function InventoryWorkspace() {
             error={formError}
             onSubmit={handleCreate}
             onCancel={() => setDialog(null)}
+          />
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={dialog?.type === 'edit'}
+        title="Edit batch"
+        onClose={closeEditDialog}
+      >
+        {dialog?.type === 'edit' ? (
+          <InventoryBatchForm
+            key={dialog.batch.id}
+            batch={dialog.batch}
+            defaultValues={valuesFromInventoryBatch(dialog.batch)}
+            submitLabel="Save changes"
+            isSubmitting={updateState.isLoading}
+            error={formError}
+            onSubmit={(values) => handleEdit(dialog.batch, values)}
+            onCancel={closeEditDialog}
           />
         ) : null}
       </Modal>

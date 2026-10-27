@@ -76,3 +76,11 @@ export type CreateStockMovementPayload = {
   quantity: number
   note?: string
 }
+
+export type UpdateInventoryPayload = {
+  batchNumber?: string
+  manufacturingDate?: string
+  expiryDate?: string
+  purchaseRate?: number
+  note?: string
+}

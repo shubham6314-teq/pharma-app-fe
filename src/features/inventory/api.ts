@@ -4,6 +4,7 @@ import type {
   CreateStockMovementPayload,
   InventoryBatch,
   ListInventoryQuery,
+  UpdateInventoryPayload,
 } from './types'
 
 export const inventoryApi = baseApi.injectEndpoints({
@@ -47,6 +48,20 @@ export const inventoryApi = baseApi.injectEndpoints({
         ...(result ? [{ type: 'Inventory' as const, id: result.id }] : []),
       ],
     }),
+    updateInventory: builder.mutation<
+      InventoryBatch,
+      { id: string; body: UpdateInventoryPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/inventory/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Inventory', id },
+        { type: 'Inventory', id: 'LIST' },
+      ],
+    }),
   }),
 })
 
@@ -54,4 +69,5 @@ export const {
   useGetInventoryQuery,
   useGetInventoryBatchQuery,
   useCreateStockMovementMutation,
+  useUpdateInventoryMutation,
 } = inventoryApi
