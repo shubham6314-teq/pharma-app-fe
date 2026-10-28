@@ -7,7 +7,10 @@ import { DivisionsPage } from '../pages/divisions/DivisionsPage'
 import { PackTypesPage } from '../pages/pack-types/PackTypesPage'
 import { ProductsPage } from '../pages/products/ProductsPage'
 import { HomePage } from '../pages/home/HomePage'
+import { InventoryAlertPage } from '../pages/inventory-alerts/InventoryAlertPage'
+import { InventoryAlertsPage } from '../pages/inventory-alerts/InventoryAlertsPage'
 import { InventoryPage } from '../pages/inventory/InventoryPage'
+import { KnowledgePage } from '../pages/knowledge/KnowledgePage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrdersPage } from '../pages/orders/OrdersPage'
 import { ProfilePage } from '../pages/profile/ProfilePage'
@@ -103,6 +106,9 @@ export function App() {
             <Route path="content-units" element={<ContentUnitsPage />} />
             <Route path="overview" element={<HomePage />} />
             <Route path="inventory" element={<InventoryPage />} />
+            <Route path="inventory-alerts" element={<InventoryAlertsPage />} />
+            <Route path="inventory-alerts/:alertId" element={<InventoryAlertPage />} />
+            <Route path="knowledge" element={<KnowledgePage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="prescriptions" element={<PrescriptionsPage />} />
             <Route path="profile" element={<ProfilePage />} />

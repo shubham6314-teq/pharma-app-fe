@@ -7,6 +7,8 @@ export type NavIconName =
   | 'contentUnits'
   | 'overview'
   | 'inventory'
+  | 'alerts'
+  | 'policies'
   | 'orders'
   | 'prescriptions'
 
@@ -33,6 +35,8 @@ export const navItems: NavEntry[] = [
   { to: "/categories", label: "Categories", icon: "categories" },
   { to: "/products", label: "Products", icon: "products" },
   { to: "/inventory", label: "Inventory", icon: "inventory" },
+  { to: "/inventory-alerts", label: "Alerts", icon: "alerts" },
+  { to: "/knowledge", label: "Policies", icon: "policies" },
   {
     type: "group",
     id: "master-data",
@@ -61,11 +65,13 @@ export function navLabelForPath(pathname: string): string {
     return 'Profile'
   }
 
-  return (
-    flattenNavLinks().find((item) =>
-      item.end ? pathname === item.to : pathname.startsWith(item.to),
-    )?.label ?? 'Divisions'
+  const matches = flattenNavLinks().filter((item) =>
+    item.end
+      ? pathname === item.to
+      : pathname === item.to || pathname.startsWith(`${item.to}/`),
   )
+
+  return matches.sort((left, right) => right.to.length - left.to.length)[0]?.label ?? 'Divisions'
 }
 
 export function groupContainsPath(group: NavGroupItem, pathname: string): boolean {

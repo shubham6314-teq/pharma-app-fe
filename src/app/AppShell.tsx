@@ -22,6 +22,8 @@ import { ProfileButton } from '../components/ui/ProfileButton'
 import { SidebarUiContext } from '../hooks/use-sidebar-ui'
 import { useToast } from '../hooks/use-toast'
 import { useLogoutMutation } from '../features/auth/api'
+import { AlertBell } from '../features/inventory-alerts/components/AlertBell'
+import { useAlertSocket } from '../features/inventory-alerts/use-alert-socket'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { clearAuth } from '../store/slices/auth-slice'
 import {
@@ -45,6 +47,8 @@ const navIcons: Record<NavIconName, ReactNode> = {
   contentUnits: <IconBeaker />,
   overview: <IconGrid />,
   inventory: <IconBox />,
+  alerts: <IconBox />,
+  policies: <IconFile />,
   orders: <IconClipboard />,
   prescriptions: <IconFile />,
 }
@@ -61,16 +65,18 @@ export function AppShell() {
   const [navOpen, setNavOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const location = useLocation()
+  const [navPath, setNavPath] = useState(location.pathname)
+  if (navPath !== location.pathname) {
+    setNavPath(location.pathname)
+    setNavOpen(false)
+  }
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const toast = useToast()
   const [logout] = useLogoutMutation()
   const user = useAppSelector((state) => state.auth.user)
   const currentLabel = navLabelForPath(location.pathname)
-
-  useEffect(() => {
-    setNavOpen(false)
-  }, [location.pathname])
+  useAlertSocket()
 
   useEffect(() => {
     if (!navOpen) {
@@ -176,6 +182,7 @@ export function AppShell() {
             <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900">
               {currentLabel}
             </p>
+            <AlertBell />
             <ProfileButton />
           </header>
 
@@ -206,13 +213,18 @@ function SidebarNav({
   return (
     <>
       <div className={`py-4 ${collapsed ? 'px-2' : 'px-3'}`}>
-        {collapsed ? null : (
+        {collapsed ? (
+          <div className="flex justify-center">
+            <AlertBell tone="onDark" />
+          </div>
+        ) : (
           <div className="flex min-w-0 items-center gap-3">
             <PharmacyMark tone="onDark" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-lg font-semibold tracking-tight">PharmaDesk</p>
               <p className="text-sm text-teal-100/75">Pharmacy operations</p>
             </div>
+            <AlertBell tone="onDark" />
           </div>
         )}
       </div>
