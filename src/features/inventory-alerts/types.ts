@@ -8,6 +8,8 @@ export type InventoryAlertStatus =
   | 'DISMISSED'
   | 'RESOLVED'
 
+export type RecommendationStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
 export type InventoryAlertAnalysis = {
   id: string
   explanation: string
@@ -15,6 +17,9 @@ export type InventoryAlertAnalysis = {
   calculationExplanation: string
   missingInformation: string[]
   citedChunkIds: string[]
+  recommendationStatus: RecommendationStatus
+  decidedQuantity: number | null
+  decidedAt: string | null
   model: string
   evidence: {
     observations?: {

@@ -8,6 +8,7 @@ export type NavIconName =
   | 'overview'
   | 'inventory'
   | 'alerts'
+  | 'copilot'
   | 'policies'
   | 'orders'
   | 'prescriptions'
@@ -36,6 +37,7 @@ export const navItems: NavEntry[] = [
   { to: "/products", label: "Products", icon: "products" },
   { to: "/inventory", label: "Inventory", icon: "inventory" },
   { to: "/inventory-alerts", label: "Alerts", icon: "alerts" },
+  { to: "/copilot", label: "Copilot", icon: "copilot" },
   { to: "/knowledge", label: "Policies", icon: "policies" },
   {
     type: "group",

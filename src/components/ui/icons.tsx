@@ -185,6 +185,19 @@ export function IconClipboard(props: IconProps) {
   )
 }
 
+export function IconChat(props: IconProps) {
+  return (
+    <BaseIcon {...props}>
+      <path
+        d="M6 6.5h12A1.5 1.5 0 0 1 19.5 8v7A1.5 1.5 0 0 1 18 16.5H11l-4 3v-3H6A1.5 1.5 0 0 1 4.5 15V8A1.5 1.5 0 0 1 6 6.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </BaseIcon>
+  )
+}
+
 export function IconFile(props: IconProps) {
   return (
     <BaseIcon {...props}>

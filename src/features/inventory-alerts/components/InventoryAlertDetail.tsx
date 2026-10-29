@@ -1,11 +1,18 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { PagePanel } from '../../../components/ui/PagePanel'
+import { TextField } from '../../../components/ui/TextField'
 import {
+  useDecideInventoryAlertRecommendationMutation,
   useDismissInventoryAlertMutation,
   useGetInventoryAlertQuery,
 } from '../api'
-import { alertStatusLabel, missingFactLabel } from '../labels'
+import {
+  alertStatusLabel,
+  missingFactLabel,
+  recommendationStatusLabel,
+} from '../labels'
 
 const DISMISSABLE = new Set(['OPEN', 'READY', 'FAILED'])
 
@@ -15,10 +22,52 @@ export function InventoryAlertDetail() {
     skip: !alertId,
   })
   const [dismiss, dismissState] = useDismissInventoryAlertMutation()
+  const [decide, decideState] = useDecideInventoryAlertRecommendationMutation()
+  const [quantityDraft, setQuantityDraft] = useState<string | undefined>(undefined)
+  const [quantityAlertId, setQuantityAlertId] = useState(data?.id)
+  const [decisionError, setDecisionError] = useState<string | null>(null)
   const citedChunks =
     data?.analysis?.evidence?.observations?.searchKnowledge?.chunks?.filter(
       (chunk) => data.analysis?.citedChunkIds.includes(chunk.id),
     ) ?? []
+  const pendingRecommendation =
+    data?.status === 'READY' &&
+    data.analysis?.recommendationStatus === 'PENDING'
+
+  if (data?.id !== quantityAlertId) {
+    setQuantityAlertId(data?.id)
+    setQuantityDraft(undefined)
+  }
+
+  const quantity =
+    quantityDraft ??
+    (data?.analysis?.recommendedQuantity != null
+      ? String(data.analysis.recommendedQuantity)
+      : '')
+
+  async function onDecide(decision: 'APPROVE' | 'REJECT') {
+    if (!data) {
+      return
+    }
+
+    setDecisionError(null)
+    const parsed = Number(quantity)
+    try {
+      await decide({
+        id: data.id,
+        decision,
+        ...(decision === 'APPROVE' && Number.isInteger(parsed) && parsed > 0
+          ? { quantity: parsed }
+          : {}),
+      }).unwrap()
+    } catch {
+      setDecisionError(
+        decision === 'APPROVE'
+          ? 'The recommendation could not be approved.'
+          : 'The recommendation could not be rejected.',
+      )
+    }
+  }
 
   return (
     <PagePanel
@@ -128,6 +177,60 @@ export function InventoryAlertDetail() {
                       ))}
                     </ul>
                   </div>
+                ) : null}
+                <p className="text-slate-500">
+                  Decision: {recommendationStatusLabel(data.analysis.recommendationStatus)}
+                  {data.analysis.decidedQuantity != null
+                    ? ` · ${data.analysis.decidedQuantity} boxes`
+                    : ''}
+                </p>
+                {pendingRecommendation ? (
+                  <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
+                    <TextField
+                      label="Quantity"
+                      name="quantity"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={quantity}
+                      onChange={(event) => setQuantityDraft(event.target.value)}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        width="auto"
+                        size="sm"
+                        disabled={decideState.isLoading}
+                        onClick={() => {
+                          void onDecide('APPROVE')
+                        }}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        width="auto"
+                        size="sm"
+                        variant="danger"
+                        disabled={decideState.isLoading}
+                        onClick={() => {
+                          void onDecide('REJECT')
+                        }}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                    {decisionError ? (
+                      <p className="text-sm text-red-700">{decisionError}</p>
+                    ) : null}
+                  </div>
+                ) : null}
+                {data.analysis.recommendationStatus === 'APPROVED' ? (
+                  <p className="rounded-2xl bg-teal-50 px-4 py-3 text-sm text-teal-900">
+                    Recorded. Stock is unchanged. Record a purchase on Inventory if you
+                    want to add boxes.{' '}
+                    <Link to="/inventory" className="font-medium underline">
+                      Open inventory
+                    </Link>
+                  </p>
                 ) : null}
               </div>
             ) : null}

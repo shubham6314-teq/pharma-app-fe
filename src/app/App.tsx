@@ -10,6 +10,7 @@ import { HomePage } from '../pages/home/HomePage'
 import { InventoryAlertPage } from '../pages/inventory-alerts/InventoryAlertPage'
 import { InventoryAlertsPage } from '../pages/inventory-alerts/InventoryAlertsPage'
 import { InventoryPage } from '../pages/inventory/InventoryPage'
+import { CopilotPage } from '../pages/copilot/CopilotPage'
 import { KnowledgePage } from '../pages/knowledge/KnowledgePage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrdersPage } from '../pages/orders/OrdersPage'
@@ -109,6 +110,7 @@ export function App() {
             <Route path="inventory-alerts" element={<InventoryAlertsPage />} />
             <Route path="inventory-alerts/:alertId" element={<InventoryAlertPage />} />
             <Route path="knowledge" element={<KnowledgePage />} />
+            <Route path="copilot" element={<CopilotPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="prescriptions" element={<PrescriptionsPage />} />
             <Route path="profile" element={<ProfilePage />} />

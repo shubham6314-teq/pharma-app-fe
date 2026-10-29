@@ -12,6 +12,19 @@ export function missingFactLabel(code: string): string {
   return missingFactLabels[code] ?? code
 }
 
+export function recommendationStatusLabel(status: string): string {
+  switch (status) {
+    case 'PENDING':
+      return 'Pending'
+    case 'APPROVED':
+      return 'Approved'
+    case 'REJECTED':
+      return 'Rejected'
+    default:
+      return status
+  }
+}
+
 export function alertStatusLabel(status: string): string {
   switch (status) {
     case 'OPEN':

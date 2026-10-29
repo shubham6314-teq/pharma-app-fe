@@ -42,6 +42,23 @@ export const inventoryAlertsApi = baseApi.injectEndpoints({
         { type: 'InventoryAlert', id: 'LIST' },
       ],
     }),
+    decideInventoryAlertRecommendation: builder.mutation<
+      InventoryAlert,
+      { id: string; decision: 'APPROVE' | 'REJECT'; quantity?: number }
+    >({
+      query: ({ id, decision, quantity }) => ({
+        url: `/inventory-alerts/${id}/recommendation`,
+        method: 'PATCH',
+        body: {
+          decision,
+          ...(typeof quantity === 'number' ? { quantity } : {}),
+        },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'InventoryAlert', id },
+        { type: 'InventoryAlert', id: 'LIST' },
+      ],
+    }),
   }),
 })
 
@@ -49,4 +66,5 @@ export const {
   useGetInventoryAlertsQuery,
   useGetInventoryAlertQuery,
   useDismissInventoryAlertMutation,
+  useDecideInventoryAlertRecommendationMutation,
 } = inventoryAlertsApi
