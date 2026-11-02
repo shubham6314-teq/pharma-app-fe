@@ -45,6 +45,8 @@ export const inventoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result) => [
         { type: 'Inventory', id: 'LIST' },
+        { type: 'InventoryAlert', id: 'LIST' },
+        { type: 'Overview', id: 'SUMMARY' },
         ...(result ? [{ type: 'Inventory' as const, id: result.id }] : []),
       ],
     }),
@@ -60,6 +62,8 @@ export const inventoryApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Inventory', id },
         { type: 'Inventory', id: 'LIST' },
+        { type: 'InventoryAlert', id: 'LIST' },
+        { type: 'Overview', id: 'SUMMARY' },
       ],
     }),
   }),

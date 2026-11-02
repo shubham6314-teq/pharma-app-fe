@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import {
@@ -52,7 +52,7 @@ const navIcons: Record<NavIconName, ReactNode> = {
   copilot: <IconChat />,
   policies: <IconFile />,
   orders: <IconClipboard />,
-  prescriptions: <IconFile />,
+  suppliers: <IconClipboard />,
 }
 
 function readCollapsed(): boolean {
@@ -151,7 +151,7 @@ export function AppShell() {
 
         <aside
           id="app-sidebar"
-          className="fixed inset-y-0 left-0 z-50 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-[#0b3d3a] text-white transition-transform duration-200 ease-out lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex w-64 max-w-[85vw] flex-col overflow-hidden bg-[#0b3d3a] text-white transition-transform duration-200 ease-out lg:hidden"
           style={{ transform: navOpen ? 'translateX(0)' : 'translateX(-100%)' }}
           aria-hidden={!navOpen}
           aria-label="Navigation"
@@ -213,8 +213,8 @@ function SidebarNav({
   onExpandSidebar?: () => void
 }) {
   return (
-    <>
-      <div className={`py-4 ${collapsed ? 'px-2' : 'px-3'}`}>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className={`shrink-0 py-4 ${collapsed ? 'px-2' : 'px-3'}`}>
         {collapsed ? (
           <div className="flex justify-center">
             <AlertBell tone="onDark" />
@@ -231,7 +231,11 @@ function SidebarNav({
         )}
       </div>
 
-      <nav className={`flex flex-1 flex-col gap-1 overflow-y-auto ${collapsed ? 'px-2' : 'px-3'}`}>
+      <nav
+        className={`sidebar-scroll flex min-h-0 flex-1 flex-col gap-1 overflow-x-hidden overflow-y-auto overscroll-contain pb-3 ${
+          collapsed ? 'px-2' : 'px-3'
+        }`}
+      >
         {navItems.map((item) =>
           isNavGroup(item) ? (
             <SidebarNavGroup
@@ -259,7 +263,7 @@ function SidebarNav({
         onSignOut={onSignOut}
         onNavigate={onNavigate}
       />
-    </>
+    </div>
   )
 }
 
@@ -312,6 +316,26 @@ function SidebarNavGroup({
   const childActive = groupContainsPath(group, location.pathname)
   const [expanded, setExpanded] = useState(childActive)
   const open = childActive || expanded
+  const groupRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!open || collapsed) {
+      return
+    }
+
+    const groupEl = groupRef.current
+    const nav = groupEl?.closest('nav')
+    if (!groupEl || !nav) {
+      return
+    }
+
+    const navRect = nav.getBoundingClientRect()
+    const groupRect = groupEl.getBoundingClientRect()
+    const hiddenBelow = groupRect.bottom - navRect.bottom
+    if (hiddenBelow > 0) {
+      nav.scrollTop += hiddenBelow + 12
+    }
+  }, [open, collapsed])
 
   if (collapsed) {
     return (
@@ -332,7 +356,7 @@ function SidebarNavGroup({
   }
 
   return (
-    <div>
+    <div ref={groupRef}>
       <button
         type="button"
         aria-expanded={open}
@@ -384,7 +408,7 @@ function SidebarAccount({
 
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center gap-1 border-t border-white/10 p-2">
+      <div className="flex shrink-0 flex-col items-center gap-1 border-t border-white/10 p-2">
         <ProfileButton tone="onDark" />
         <Button
           variant="ghost"
@@ -401,7 +425,7 @@ function SidebarAccount({
   }
 
   return (
-    <div className="border-t border-white/10 p-4">
+    <div className="shrink-0 border-t border-white/10 p-4">
       <Link
         to="/profile"
         onClick={onNavigate}

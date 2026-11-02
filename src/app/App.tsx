@@ -14,8 +14,9 @@ import { CopilotPage } from '../pages/copilot/CopilotPage'
 import { KnowledgePage } from '../pages/knowledge/KnowledgePage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrdersPage } from '../pages/orders/OrdersPage'
+import { PurchaseOrderPage } from '../pages/orders/PurchaseOrderPage'
+import { SuppliersPage } from '../pages/suppliers/SuppliersPage'
 import { ProfilePage } from '../pages/profile/ProfilePage'
-import { PrescriptionsPage } from '../pages/prescriptions/PrescriptionsPage'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { markSessionChecked } from '../store/slices/auth-slice'
 import { AppShell } from './AppShell'
@@ -99,7 +100,7 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<Navigate to="/divisions" replace />} />
+            <Route index element={<Navigate to="/overview" replace />} />
             <Route path="divisions" element={<DivisionsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="products" element={<ProductsPage />} />
@@ -111,8 +112,10 @@ export function App() {
             <Route path="inventory-alerts/:alertId" element={<InventoryAlertPage />} />
             <Route path="knowledge" element={<KnowledgePage />} />
             <Route path="copilot" element={<CopilotPage />} />
+            <Route path="suppliers" element={<SuppliersPage />} />
             <Route path="orders" element={<OrdersPage />} />
-            <Route path="prescriptions" element={<PrescriptionsPage />} />
+            <Route path="orders/:orderId" element={<PurchaseOrderPage />} />
+            <Route path="prescriptions" element={<Navigate to="/overview" replace />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

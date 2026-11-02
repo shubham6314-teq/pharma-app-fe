@@ -8,12 +8,17 @@ export type InventoryAlertStatus =
   | 'DISMISSED'
   | 'RESOLVED'
 
+export type InventoryAlertKind = 'LOW_STOCK' | 'EXPIRY'
+
+export type ExpiryAction = 'USE_FIRST' | 'DO_NOT_DISPENSE' | 'RETURN_TO_SUPPLIER'
+
 export type RecommendationStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 
 export type InventoryAlertAnalysis = {
   id: string
   explanation: string
   recommendedQuantity: number | null
+  recommendedAction: ExpiryAction | null
   calculationExplanation: string
   missingInformation: string[]
   citedChunkIds: string[]
@@ -39,9 +44,12 @@ export type InventoryAlertAnalysis = {
 export type InventoryAlert = {
   id: string
   productId: string
-  kind: 'LOW_STOCK'
+  kind: InventoryAlertKind
   availableQuantity: number
   reorderLevel: number
+  inventoryBatchId: string | null
+  batchNumber: string | null
+  expiryDate: string | null
   status: InventoryAlertStatus
   resolvedAt: string | null
   createdAt: string
@@ -62,6 +70,17 @@ export type InventoryAlert = {
     }
   }
   analysis: InventoryAlertAnalysis | null
+  purchaseOrder: {
+    id: string
+    number: string
+    status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED'
+    supplierId: string | null
+    supplier: {
+      id: string
+      name: string
+      code: string
+    } | null
+  } | null
 }
 
 export type ListInventoryAlertsQuery = {
@@ -69,6 +88,7 @@ export type ListInventoryAlertsQuery = {
   limit?: number
   active?: boolean
   status?: InventoryAlertStatus
+  kind?: InventoryAlertKind
 }
 
 export type InventoryAlertList = PaginatedResponse<InventoryAlert>

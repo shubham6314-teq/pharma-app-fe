@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { PagePanel } from '../../../components/ui/PagePanel'
 import { useGetInventoryAlertsQuery } from '../api'
-import { alertStatusLabel } from '../labels'
+import { alertKindLabel, alertStatusLabel } from '../labels'
 
 export function InventoryAlertsWorkspace() {
   const { data, isLoading, isError } = useGetInventoryAlertsQuery({
@@ -13,7 +13,7 @@ export function InventoryAlertsWorkspace() {
   return (
     <PagePanel
       title="Inventory alerts"
-      description="Low-stock notifications stay here while the investigation runs. Stock quantities are not changed by an analysis."
+      description="Low-stock and near-expiry notifications stay here while the investigation runs. Analysis does not change stock or write an expiry movement."
     >
       {isLoading ? (
         <p className="px-5 py-8 text-sm text-slate-500">Loading alerts…</p>
@@ -22,7 +22,7 @@ export function InventoryAlertsWorkspace() {
         <p className="px-5 py-8 text-sm text-red-700">Alerts could not be loaded.</p>
       ) : null}
       {data && data.data.length === 0 ? (
-        <p className="px-5 py-8 text-sm text-slate-500">No open low-stock alerts.</p>
+        <p className="px-5 py-8 text-sm text-slate-500">No open inventory alerts.</p>
       ) : null}
       {data && data.data.length > 0 ? (
         <ul className="divide-y divide-slate-100">
@@ -37,8 +37,14 @@ export function InventoryAlertsWorkspace() {
                     {alert.product.name}
                   </span>
                   <span className="text-sm text-slate-500">
-                    {alert.availableQuantity} available · reorder level{' '}
-                    {alert.reorderLevel}
+                    {alertKindLabel(alert.kind)}
+                    {alert.kind === 'EXPIRY' && alert.batchNumber
+                      ? ` · batch ${alert.batchNumber}${
+                          alert.expiryDate
+                            ? ` · expires ${alert.expiryDate.slice(0, 10)}`
+                            : ''
+                        }`
+                      : ` · ${alert.availableQuantity} available · reorder level ${alert.reorderLevel}`}
                   </span>
                 </span>
                 <span className="text-sm font-medium text-teal-800">

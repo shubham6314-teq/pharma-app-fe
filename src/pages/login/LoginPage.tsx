@@ -21,11 +21,11 @@ export function LoginPage() {
             Secure access
           </p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight">
-            Sign in to manage inventory, prescriptions, and orders.
+            Sign in to manage inventory, alerts, and orders.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-teal-50/75">
             One workspace for pharmacists and staff. Keep stock accurate and
-            patient records easy to find.
+            alerts easy to review.
           </p>
         </div>
 

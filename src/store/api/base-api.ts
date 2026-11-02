@@ -134,6 +134,9 @@ export const baseApi = createApi({
     'InventoryAlert',
     'CopilotThread',
     'KnowledgeDocument',
+    'Supplier',
+    'PurchaseOrder',
+    'Overview',
   ],
   endpoints: () => ({}),
 })

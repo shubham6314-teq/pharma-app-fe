@@ -9,7 +9,9 @@ import {
   useGetInventoryAlertQuery,
 } from '../api'
 import {
+  alertKindLabel,
   alertStatusLabel,
+  expiryActionLabel,
   missingFactLabel,
   recommendationStatusLabel,
 } from '../labels'
@@ -30,8 +32,10 @@ export function InventoryAlertDetail() {
     data?.analysis?.evidence?.observations?.searchKnowledge?.chunks?.filter(
       (chunk) => data.analysis?.citedChunkIds.includes(chunk.id),
     ) ?? []
+  const isExpiry = data?.kind === 'EXPIRY'
   const pendingRecommendation =
     data?.status === 'READY' &&
+    data.kind === 'LOW_STOCK' &&
     data.analysis?.recommendationStatus === 'PENDING'
 
   if (data?.id !== quantityAlertId) {
@@ -72,7 +76,11 @@ export function InventoryAlertDetail() {
   return (
     <PagePanel
       title={data?.product.name ?? 'Inventory alert'}
-      description="The original low-stock notification stays next to the investigation. The recommendation does not change stock or create a purchase."
+      description={
+        isExpiry
+          ? 'The near-expiry notification stays next to the investigation. The advice does not write an expiry movement or change stock.'
+          : 'The original low-stock notification stays next to the investigation. The recommendation does not change stock or create a purchase.'
+      }
       actions={
         data && DISMISSABLE.has(data.status) ? (
           <Button
@@ -99,17 +107,52 @@ export function InventoryAlertDetail() {
               Notification
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-900">
-              {data.product.name} is below its reorder level
+              {isExpiry
+                ? `${data.product.name} has a batch nearing expiry`
+                : `${data.product.name} is below its reorder level`}
             </h2>
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-slate-500">Available</dt>
-                <dd className="font-medium text-slate-900">{data.availableQuantity}</dd>
+                <dt className="text-slate-500">Kind</dt>
+                <dd className="font-medium text-slate-900">
+                  {alertKindLabel(data.kind)}
+                </dd>
               </div>
-              <div>
-                <dt className="text-slate-500">Reorder level</dt>
-                <dd className="font-medium text-slate-900">{data.reorderLevel}</dd>
-              </div>
+              {isExpiry ? (
+                <>
+                  <div>
+                    <dt className="text-slate-500">Batch</dt>
+                    <dd className="font-medium text-slate-900">
+                      {data.batchNumber ?? 'Unknown'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Expiry date</dt>
+                    <dd className="font-medium text-slate-900">
+                      {data.expiryDate ? data.expiryDate.slice(0, 10) : 'Unknown'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Packs on batch</dt>
+                    <dd className="font-medium text-slate-900">
+                      {data.availableQuantity}
+                    </dd>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <dt className="text-slate-500">Available</dt>
+                    <dd className="font-medium text-slate-900">
+                      {data.availableQuantity}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Reorder level</dt>
+                    <dd className="font-medium text-slate-900">{data.reorderLevel}</dd>
+                  </div>
+                </>
+              )}
               <div>
                 <dt className="text-slate-500">Status</dt>
                 <dd className="font-medium text-slate-900">
@@ -143,19 +186,26 @@ export function InventoryAlertDetail() {
             ) : null}
             {data.status === 'FAILED' ? (
               <p className="mt-2 text-sm text-slate-600">
-                No recommendation was generated. The low-stock notification is unchanged.
+                No recommendation was generated. The notification is unchanged.
               </p>
             ) : null}
             {data.analysis ? (
               <div className="mt-2 space-y-4 text-sm text-slate-700">
                 <p>{data.analysis.explanation}</p>
                 <div>
-                  <p className="font-medium text-slate-900">
-                    Recommended quantity:{' '}
-                    {data.analysis.recommendedQuantity === null
-                      ? 'Not available'
-                      : data.analysis.recommendedQuantity}
-                  </p>
+                  {isExpiry ? (
+                    <p className="font-medium text-slate-900">
+                      Recommended action:{' '}
+                      {expiryActionLabel(data.analysis.recommendedAction)}
+                    </p>
+                  ) : (
+                    <p className="font-medium text-slate-900">
+                      Recommended quantity:{' '}
+                      {data.analysis.recommendedQuantity === null
+                        ? 'Not available'
+                        : data.analysis.recommendedQuantity}
+                    </p>
+                  )}
                   <p className="mt-1">{data.analysis.calculationExplanation}</p>
                 </div>
                 {data.analysis.missingInformation.length > 0 ? (
@@ -178,12 +228,19 @@ export function InventoryAlertDetail() {
                     </ul>
                   </div>
                 ) : null}
-                <p className="text-slate-500">
-                  Decision: {recommendationStatusLabel(data.analysis.recommendationStatus)}
-                  {data.analysis.decidedQuantity != null
-                    ? ` · ${data.analysis.decidedQuantity} boxes`
-                    : ''}
-                </p>
+                {isExpiry ? (
+                  <p className="text-slate-500">
+                    Advisory only. Stock is unchanged and no expiry movement is written.
+                  </p>
+                ) : (
+                  <p className="text-slate-500">
+                    Decision:{' '}
+                    {recommendationStatusLabel(data.analysis.recommendationStatus)}
+                    {data.analysis.decidedQuantity != null
+                      ? ` · ${data.analysis.decidedQuantity} boxes`
+                      : ''}
+                  </p>
+                )}
                 {pendingRecommendation ? (
                   <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
                     <TextField
@@ -225,11 +282,25 @@ export function InventoryAlertDetail() {
                 ) : null}
                 {data.analysis.recommendationStatus === 'APPROVED' ? (
                   <p className="rounded-2xl bg-teal-50 px-4 py-3 text-sm text-teal-900">
-                    Recorded. Stock is unchanged. Record a purchase on Inventory if you
-                    want to add boxes.{' '}
-                    <Link to="/inventory" className="font-medium underline">
-                      Open inventory
-                    </Link>
+                    {data.purchaseOrder ? (
+                      <>
+                        Draft purchase order {data.purchaseOrder.number} created.
+                        Stock is unchanged.{' '}
+                        <Link
+                          to={`/orders/${data.purchaseOrder.id}`}
+                          className="font-medium underline"
+                        >
+                          Open the order
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        Recorded. Stock is unchanged.{' '}
+                        <Link to="/orders" className="font-medium underline">
+                          Open orders
+                        </Link>
+                      </>
+                    )}
                   </p>
                 ) : null}
               </div>

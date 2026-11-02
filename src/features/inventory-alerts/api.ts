@@ -8,13 +8,14 @@ import type {
 export const inventoryAlertsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getInventoryAlerts: builder.query<InventoryAlertList, ListInventoryAlertsQuery>({
-      query: ({ page = 1, limit = 10, active, status }) => ({
+      query: ({ page = 1, limit = 10, active, status, kind }) => ({
         url: '/inventory-alerts',
         params: {
           page,
           limit,
           ...(active ? { active: true } : {}),
           ...(status ? { status } : {}),
+          ...(kind ? { kind } : {}),
         },
       }),
       providesTags: (result) =>
@@ -40,6 +41,7 @@ export const inventoryAlertsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: 'InventoryAlert', id },
         { type: 'InventoryAlert', id: 'LIST' },
+        { type: 'Overview', id: 'SUMMARY' },
       ],
     }),
     decideInventoryAlertRecommendation: builder.mutation<
@@ -57,6 +59,8 @@ export const inventoryAlertsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'InventoryAlert', id },
         { type: 'InventoryAlert', id: 'LIST' },
+        { type: 'PurchaseOrder', id: 'LIST' },
+        { type: 'Overview', id: 'SUMMARY' },
       ],
     }),
   }),

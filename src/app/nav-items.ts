@@ -11,7 +11,7 @@ export type NavIconName =
   | 'copilot'
   | 'policies'
   | 'orders'
-  | 'prescriptions'
+  | 'suppliers'
 
 export type NavLinkItem = {
   type?: 'link'
@@ -32,26 +32,26 @@ export type NavGroupItem = {
 export type NavEntry = NavLinkItem | NavGroupItem
 
 export const navItems: NavEntry[] = [
-  { to: "/divisions", label: "Divisions", icon: "divisions" },
-  { to: "/categories", label: "Categories", icon: "categories" },
-  { to: "/products", label: "Products", icon: "products" },
-  { to: "/inventory", label: "Inventory", icon: "inventory" },
-  { to: "/inventory-alerts", label: "Alerts", icon: "alerts" },
-  { to: "/copilot", label: "Copilot", icon: "copilot" },
-  { to: "/knowledge", label: "Policies", icon: "policies" },
+  { to: '/overview', label: 'Overview', icon: 'overview' },
+  { to: '/inventory-alerts', label: 'Alerts', icon: 'alerts' },
+  { to: '/orders', label: 'Orders', icon: 'orders' },
+  { to: '/inventory', label: 'Inventory', icon: 'inventory' },
+  { to: '/copilot', label: 'Copilot', icon: 'copilot' },
+  { to: '/knowledge', label: 'Policies', icon: 'policies' },
+  { to: '/divisions', label: 'Divisions', icon: 'divisions' },
+  { to: '/categories', label: 'Categories', icon: 'categories' },
+  { to: '/products', label: 'Products', icon: 'products' },
   {
-    type: "group",
-    id: "master-data",
-    label: "Master data",
-    icon: "masterData",
+    type: 'group',
+    id: 'master-data',
+    label: 'Master data',
+    icon: 'masterData',
     children: [
-      { to: "/pack-types", label: "Pack types", icon: "packTypes" },
-      { to: "/content-units", label: "Content units", icon: "contentUnits" },
+      { to: '/pack-types', label: 'Pack types', icon: 'packTypes' },
+      { to: '/content-units', label: 'Content units', icon: 'contentUnits' },
+      { to: '/suppliers', label: 'Suppliers', icon: 'suppliers' },
     ],
   },
-  { to: "/overview", label: "Overview", icon: "overview" },
-  { to: "/orders", label: "Orders", icon: "orders" },
-  { to: "/prescriptions", label: "Prescriptions", icon: "prescriptions" },
 ];
 
 export function isNavGroup(item: NavEntry): item is NavGroupItem {
@@ -73,7 +73,7 @@ export function navLabelForPath(pathname: string): string {
       : pathname === item.to || pathname.startsWith(`${item.to}/`),
   )
 
-  return matches.sort((left, right) => right.to.length - left.to.length)[0]?.label ?? 'Divisions'
+  return matches.sort((left, right) => right.to.length - left.to.length)[0]?.label ?? 'Overview'
 }
 
 export function groupContainsPath(group: NavGroupItem, pathname: string): boolean {
