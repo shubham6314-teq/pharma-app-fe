@@ -3,6 +3,8 @@ import { Button } from '../../../components/ui/Button'
 import { PagePanel } from '../../../components/ui/PagePanel'
 import { TextField } from '../../../components/ui/TextField'
 import { useAppSelector } from '../../../store/hooks'
+import { useGetKnowledgeDocumentsQuery } from '../../knowledge/api'
+import { useGetProductsQuery } from '../../products/api'
 import {
   useCreateCopilotThreadMutation,
   useLazyGetCopilotThreadQuery,
@@ -12,11 +14,8 @@ import type { CopilotCitation, CopilotMessage, CopilotThread } from '../types'
 
 const THREAD_STORAGE_KEY = 'pharma-copilot-thread-id'
 
-const EXAMPLES = [
-  'Which products are below reorder level?',
-  'What does the reorder policy say?',
-  'How many boxes of CRO500 are available?',
-]
+const LOW_STOCK_EXAMPLE = 'Which products are below reorder level?'
+const POLICY_EXAMPLE = 'What does the reorder policy say?'
 
 function readStoredThreadId(): string | null {
   try {
@@ -48,8 +47,16 @@ function citationLabel(citation: CopilotCitation): string {
 
 export function CopilotWorkspace() {
   const token = useAppSelector((state) => state.auth.token)
+  const { data: documents } = useGetKnowledgeDocumentsQuery()
+  const { data: productsPage } = useGetProductsQuery({ page: 1, limit: 1 })
   const [createThread, createState] = useCreateCopilotThreadMutation()
   const [loadThread] = useLazyGetCopilotThreadQuery()
+  const productCode = productsPage?.data[0]?.code
+  const examples = [
+    LOW_STOCK_EXAMPLE,
+    ...(documents && documents.length > 0 ? [POLICY_EXAMPLE] : []),
+    ...(productCode ? [`How many boxes of ${productCode} are available?`] : []),
+  ]
   const [thread, setThread] = useState<CopilotThread | null>(null)
   const [pendingUser, setPendingUser] = useState<CopilotMessage | null>(null)
   const [draft, setDraft] = useState('')
@@ -153,16 +160,35 @@ export function CopilotWorkspace() {
       onToken(text) {
         setDraft((current) => current + text)
       },
-      onDone() {
+      onDone(message) {
+        const userMessage: CopilotMessage = {
+          id: `user-${Date.now()}`,
+          role: 'USER',
+          content: trimmed,
+          citations: null,
+          createdAt: new Date().toISOString(),
+        }
         setDraft('')
         setStreaming(false)
         setStatus('Looking up inventory…')
         setPendingUser(null)
+        setThread((current) =>
+          current
+            ? {
+                ...current,
+                messages: [...current.messages, userMessage, message],
+              }
+            : current,
+        )
         void loadThread(thread.id)
           .unwrap()
-          .then(setThread)
+          .then((fresh) => {
+            if (fresh.messages.some((item) => item.id === message.id)) {
+              setThread(fresh)
+            }
+          })
           .catch(() => {
-            setError('This conversation could not be loaded.')
+            // Keep the streamed messages if the thread refresh fails.
           })
       },
       onError(message) {
@@ -206,7 +232,7 @@ export function CopilotWorkspace() {
             <div className="space-y-3">
               <p className="text-sm text-slate-500">Try a question:</p>
               <div className="flex flex-col gap-2">
-                {EXAMPLES.map((example) => (
+                {examples.map((example) => (
                   <button
                     key={example}
                     type="button"

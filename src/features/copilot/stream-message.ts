@@ -10,7 +10,7 @@ type StreamHandlers = {
 const UNAVAILABLE = 'The copilot is unavailable.'
 const TIMEOUT_MESSAGE =
   'The copilot took too long. Try again, or look up the product on Inventory.'
-const CLIENT_TIMEOUT_MS = 310_000
+const CLIENT_TIMEOUT_MS = 130_000
 
 export async function streamCopilotMessage(input: {
   threadId: string
